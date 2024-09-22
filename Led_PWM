@@ -1,0 +1,73 @@
+from tkinter import *
+import tkinter.font as FONT
+from gpiozero import PWMLED
+import RPi.GPIO as GPIO
+
+GPIO.setmode(GPIO.BCM)  # Set GPIO mode to BCM numbering
+
+# Initialisation of PWM LEDs
+led1 = PWMLED(5)   
+led2 = PWMLED(6)   
+led3 = PWMLED(16)  
+
+# Create a Tkinter window
+root = Tk()
+root.title("LED Intensity Controller")
+
+# Set window size
+root.geometry("1200x1400")  
+root.config(bg="#282C34")  
+
+# Define fonts using Calibri
+titleFont = FONT.Font(family='Calibri', size=18, weight="bold")
+labelFont = FONT.Font(family='Calibri', size=12, weight="bold")
+buttonFont = FONT.Font(family='Calibri', size=12)
+
+# Function to update LED intensity and percentage label based on slider value
+def update_intensity(led, slider, percentage_label):
+    intensity = slider.get()
+    led.value = intensity / 100.0  # Convert 0-100 scale to 0-1 for PWM
+    percentage_label.config(text=f"{intensity}%")  # Update percentage label
+
+# Create a frame to group the sliders
+slider_frame = LabelFrame(root, text="Adjust LED Intensity", font=titleFont, fg="white", bg="#3C4043", padx=20, pady=20)
+slider_frame.grid(row=0, column=0, columnspan=3, padx=20, pady=20, sticky="nsew")  
+
+# Configure column weight for centering
+root.grid_columnconfigure(0, weight=1)
+root.grid_columnconfigure(1, weight=1)
+root.grid_columnconfigure(2, weight=1)
+
+# Create sliders for Red, Yellow, and Green LEDs with percentage labels
+slider_red = Scale(slider_frame, from_=0, to=100, orient=HORIZONTAL, length=900, label="Red Intensity", font=labelFont, fg="red", bg="red", highlightbackground="#3C4043", command=lambda value: update_intensity(led1, slider_red, label_red_percentage))
+label_red_percentage = Label(slider_frame, text="0%", font=labelFont, fg="white", bg="#3C4043")
+
+slider_yellow = Scale(slider_frame, from_=0, to=100, orient=HORIZONTAL, length=900, label="Yellow Intensity", font=labelFont, fg="yellow", bg="yellow", highlightbackground="#3C4043", command=lambda value: update_intensity(led2, slider_yellow, label_yellow_percentage))
+label_yellow_percentage = Label(slider_frame, text="0%", font=labelFont, fg="white", bg="#3C4043")
+
+slider_green = Scale(slider_frame, from_=0, to=100, orient=HORIZONTAL, length=900, label="Green Intensity", font=labelFont, fg="green", bg="green", highlightbackground="#3C4043", command=lambda value: update_intensity(led3, slider_green, label_green_percentage))
+label_green_percentage = Label(slider_frame, text="0%", font=labelFont, fg="white", bg="#3C4043")
+
+# Position the sliders and percentage labels inside the frame
+slider_red.grid(row=0, column=0, padx=10, pady=10)
+label_red_percentage.grid(row=0, column=1, padx=10)
+
+slider_yellow.grid(row=1, column=0, padx=10, pady=10)
+label_yellow_percentage.grid(row=1, column=1, padx=10)
+
+slider_green.grid(row=2, column=0, padx=10, pady=10)
+label_green_percentage.grid(row=2, column=1, padx=10)
+
+# Function to clean up GPIO pins when the window is closed
+def close():
+    GPIO.cleanup()
+    root.destroy()
+
+# Create an Exit button with custom styling
+exit_button = Button(root, text="Exit", font=buttonFont, fg="white", bg="light blue", padx=20, pady=10, command=close)
+exit_button.grid(row=1, column=1, pady=20)  
+
+# Handle window close event
+root.protocol("WM_DELETE_WINDOW", close)
+
+root.mainloop()
